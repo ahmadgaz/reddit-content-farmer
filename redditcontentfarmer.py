@@ -44,7 +44,7 @@ class RedditContentFarmer:
             import praw
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install PRAW by running `pip install praw`"
+                "Please install PRAW by running `pip install -r requirements.txt`"
             ) from None
 
         self.__client_id = client_id
@@ -270,7 +270,7 @@ class RedditContentFarmer:
             from moviepy.video.fx.resize import resize
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install moviepy by running `pip install moviepy`"
+                "Please install moviepy by running `pip install -r requirements.txt`"
             ) from None
 
         word_clips = []
@@ -335,7 +335,7 @@ class RedditContentFarmer:
             from moviepy.video.fx.resize import resize
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install moviepy by running `pip install moviepy`"
+                "Please install moviepy by running `pip install -r requirements.txt`"
             ) from None
 
         start_time = 0
@@ -357,7 +357,7 @@ class RedditContentFarmer:
             from PIL import Image, ImageDraw, ImageFont
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install PIL by running `pip install pillow`"
+                "Please install PIL by running `pip install -r requirements.txt`"
             ) from None
         if not os.path.exists("subreddit_icons"):
             raise ValueError(
@@ -453,7 +453,7 @@ class RedditContentFarmer:
             from moviepy.video.fx.resize import resize
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install moviepy by running `pip install moviepy`"
+                "Please install moviepy by running `pip install -r requirements.txt`"
             ) from None
         if hasMusic and not os.path.exists("background_music/"):
             raise ValueError(
@@ -467,7 +467,7 @@ class RedditContentFarmer:
             import pvleopard
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install pvleopard by running `pip install pvleopard`"
+                "Please install pvleopard by running `pip install -r requirements.txt`"
             ) from None
 
         if not os.path.exists(output_path):
@@ -601,7 +601,7 @@ class RedditContentFarmer:
             from instagrapi import Client
         except ModuleNotFoundError:
             raise ValueError(
-                "Please install instagrapi by running `pip install instagrapi`"
+                "Please install instagrapi by running `pip install -r requirements.txt`"
             ) from None
 
         if not os.path.exists(input_path):
