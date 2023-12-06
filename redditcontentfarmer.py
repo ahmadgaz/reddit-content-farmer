@@ -6,10 +6,12 @@ import os
 import json
 import wave
 import math
+import errno
 import random
 import logging
 import contextlib
 from typing import Literal
+from timeout import timeout
 
 
 class RedditContentFarmer:
@@ -119,6 +121,7 @@ class RedditContentFarmer:
         )
         return valid_submission
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def get_posts(
         self,
         subreddit: str,
@@ -413,6 +416,7 @@ class RedditContentFarmer:
         img.paste(pfp, (5, 5), mask)
         img.save(output_path + "/title.png")
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def create_video(
         self,
         pvleopard_access_key: str,
