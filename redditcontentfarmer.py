@@ -19,6 +19,7 @@ class RedditContentFarmer:
     Allows you to create content from Reddit posts
     """
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def __init__(
         self,
         client_id: str,
@@ -35,7 +36,7 @@ class RedditContentFarmer:
         :param verbose: Whether to enable verbose logging
         :param track_used_posts: Whether to track used posts in a file called used_stories.txt
         """
-        self.__init_logger(verbose)
+        self.__init_logger_(verbose)
 
         if not client_id or not client_secret or not user_agent:
             raise ValueError(
@@ -67,6 +68,7 @@ class RedditContentFarmer:
         self.__comments = {}
         self.__logger.debug("RedditContentFarmer initialized")
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def story_already_used(
         self, submission: "RedditContentFarmer.PrawModels.Submission"
     ):
@@ -82,6 +84,7 @@ class RedditContentFarmer:
                 return True
         return False
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def add_story_title_to_file(
         self, post: "RedditContentFarmer.PrawModels.Submission"
     ):
@@ -93,7 +96,8 @@ class RedditContentFarmer:
         with open("used_stories.txt", "a") as file:
             file.write(post.title + "\n")
 
-    def __validate_submission(
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    def __validate_submission_(
         self, submission: "RedditContentFarmer.PrawModels.Submission", word_limit: int
     ):
         used = self.story_already_used(submission) if self.__track_used_posts else False
@@ -167,7 +171,7 @@ class RedditContentFarmer:
                 for submission in self.__reddit_client.subreddit(
                     subreddit
                 ).random_rising(limit=1):
-                    if self.__validate_submission(submission, word_limit):
+                    if self.__validate_submission_(submission, word_limit):
                         self.__posts.append(submission)
                         count -= 1
                 iterations += 1
@@ -182,7 +186,7 @@ class RedditContentFarmer:
                 ):
                     submissions.append(submission)
                 submission = random.choice(submissions)
-                if self.__validate_submission(submission, word_limit):
+                if self.__validate_submission_(submission, word_limit):
                     self.__posts.append(submission)
                     count -= 1
                 iterations += 1
@@ -197,7 +201,7 @@ class RedditContentFarmer:
                 ):
                     submissions.append(submission)
                 submission = random.choice(submissions)
-                if self.__validate_submission(submission, word_limit):
+                if self.__validate_submission_(submission, word_limit):
                     self.__posts.append(submission)
                     count -= 1
                 iterations += 1
@@ -212,7 +216,7 @@ class RedditContentFarmer:
                 ):
                     submissions.append(submission)
                 submission = random.choice(submissions)
-                if self.__validate_submission(submission, word_limit):
+                if self.__validate_submission_(submission, word_limit):
                     self.__posts.append(submission)
                     count -= 1
                 iterations += 1
@@ -220,6 +224,7 @@ class RedditContentFarmer:
         self.__logger.debug("Got posts")
         return self.__posts
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def get_comments(self, word_limit: int = 200, limit: int = 6):
         """
         Get comments from posts\n
@@ -243,7 +248,8 @@ class RedditContentFarmer:
         self.__logger.debug("Got comments")
         return self.__comments
 
-    def __create_subtitle_clips(
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    def __create_subtitle_clips_(
         self,
         words: list,
         video_width: int,
@@ -320,7 +326,8 @@ class RedditContentFarmer:
 
         return word_clips
 
-    def __create_title_image_clip(
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    def __create_title_image_clip_(
         self,
         words: list,
         title_image: str,
@@ -353,7 +360,8 @@ class RedditContentFarmer:
 
         return title_image_clips
 
-    def __ceate_title_image(
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    def __ceate_title_image_(
         self, text: str, username: str, subreddit: str, output_path: str
     ):
         try:
@@ -476,7 +484,7 @@ class RedditContentFarmer:
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        self.__ceate_title_image(
+        self.__ceate_title_image_(
             text=self.__posts[0].title,
             username=self.__posts[0].author.name,
             subreddit=self.__posts[0].subreddit.name,
@@ -488,12 +496,14 @@ class RedditContentFarmer:
         get_speechify_narration(
             narrator=narrator,
             text=self.__posts[0].title,
-            output_filename=output_path + "/title_narration.wav",
+            output_path=output_path,
+            output_filename="title_narration.wav",
         )
         get_speechify_narration(
             narrator=narrator,
             text=self.__posts[0].selftext,
-            output_filename=output_path + "/story_narration.wav",
+            output_path=output_path,
+            output_filename="story_narration.wav",
         )
 
         # Get the duration of the output from the narration audio files
@@ -568,11 +578,11 @@ class RedditContentFarmer:
         story_transcript, story_words = leopard.process_file(
             output_path + "/story_narration.wav"
         )
-        title_image_clips = self.__create_title_image_clip(
+        title_image_clips = self.__create_title_image_clip_(
             words=title_words,
             title_image=f"{output_path}/title.png",
         )
-        subtitle_clips = self.__create_subtitle_clips(
+        subtitle_clips = self.__create_subtitle_clips_(
             title_narration_duration=title_narration.duration,
             words=story_words,
             video_width=background_video.size[0],
@@ -587,8 +597,13 @@ class RedditContentFarmer:
         # Composite the background video and the subtitles
         self.__logger.debug("Compositing background video and subtitles...")
         video = CompositeVideoClip([background_video] + text_clips)
-        video.write_videofile(output_path + "/output.mp4", fps=30)
+        video.write_videofile(
+            output_path + "/output.mp4",
+            temp_audiofile=output_path + "/temp_output",
+            fps=30,
+        )
 
+    @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def upload_to_instagram(
         self, username: str, password: str, input_path: str, caption: str
     ):
@@ -636,12 +651,18 @@ class RedditContentFarmer:
         """
         Kill browser processes
         """
-        os.system("taskkill /f /im geckodriver.exe /T")
-        os.system("taskkill /f /im chromedriver.exe /T")
-        os.system("taskkill /f /im chrome.exe /T")
-        os.system("taskkill /f /im IEDriverServer.exe /T")
+        # Windows
+        # os.system("taskkill /f /im geckodriver.exe /T")
+        # os.system("taskkill /f /im chromedriver.exe /T")
+        # os.system("taskkill /f /im chrome.exe /T")
+        # os.system("taskkill /f /im IEDriverServer.exe /T")
+        # Debian
+        os.system("killall -KILL geckodriver")
+        os.system("killall -KILL chromedriver")
+        os.system("killall -KILL chrome")
+        os.system("killall -KILL IEDriverServer")
 
-    def __init_logger(self, verbose: bool) -> None:
+    def __init_logger_(self, verbose: bool) -> None:
         """
         Initialize the logger\n
         :param verbose: Whether to enable verbose logging

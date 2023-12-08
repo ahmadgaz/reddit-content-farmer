@@ -1,36 +1,19 @@
-import math
-import wave
-import pyaudio
+import io
+import json
 import time
 import nltk
-from pydub import AudioSegment
+import base64
 from typing import Literal
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
+from pydub import AudioSegment
 import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 
 nltk.download("punkt")
-
-
-def suppress_exception_in_del(uc):
-    old_del = uc.Chrome.__del__
-
-    def new_del(self) -> None:
-        try:
-            old_del(self)
-        except:
-            pass
-
-    setattr(uc.Chrome, "__del__", new_del)
-
-
-def detect_input_audio(data, threshold):
-    if not data:
-        return False
-    rms = math.sqrt(sum([x**2 for x in data]) / len(data))
-    if rms > threshold:
-        return True
-    return False
 
 
 urls = [
@@ -40,6 +23,16 @@ urls = [
     "https://speechify.com/text-to-speech-online/?ttsvoice=henry&ttsgender=male&ttslang=English",
     "https://speechify.com/text-to-speech-online/?ttslang=English&ttsgender=female&ttsvoice=Jane",
 ]
+
+
+class element_has_changed:
+    def __init__(self, element):
+        self.element = element
+        self.initial_html = element.get_attribute("outerHTML")
+
+    def __call__(self, driver):
+        current_html = self.element.get_attribute("outerHTML")
+        return current_html != self.initial_html
 
 
 def split_text(text):
@@ -67,47 +60,56 @@ def split_text(text):
     return result
 
 
+def log_filter(log_):
+    return (
+        log_["method"] == "Network.responseReceived"
+        and "json" in log_["params"]["response"]["mimeType"]
+    )
+
+
+def suppress_exception_in_del(uc):
+    old_del = uc.Chrome.__del__
+
+    def new_del(self) -> None:
+        try:
+            old_del(self)
+        except:
+            pass
+
+    setattr(uc.Chrome, "__del__", new_del)
+
+
 def get_speechify_narration(
     narrator: Literal["snoop", "mrbeast", "gwyneth", "male", "female"] = "mrbeast",
     text: str = "Heck yeah baby, I'm a text to speech bot.",
+    output_path: str = "output/",
     output_filename: str = "output.wav",
 ):
     suppress_exception_in_del(uc)
-
-    match narrator:
-        case "snoop":
-            url = urls[0]
-        case "mrbeast":
-            url = urls[1]
-        case "gwyneth":
-            url = urls[2]
-        case "male":
-            url = urls[3]
-        case "female":
-            url = urls[4]
-        case _:
-            url = urls[1]
-
+    if narrator == "snoop":
+        url = urls[0]
+    elif narrator == "mrbeast":
+        url = urls[1]
+    elif narrator == "gwyneth":
+        url = urls[2]
+    elif narrator == "male":
+        url = urls[3]
+    elif narrator == "female":
+        url = urls[4]
+    else:
+        url = urls[1]
     options = uc.ChromeOptions()
-    options.add_argument("--window-size=1024,768")
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
+    # prefs = {"excludeswitches": ["mute-audio"]}
+    # options.add_experimental_option("prefs", prefs)
     driver = uc.Chrome(options=options)
     driver.get(url)
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 2
-    RATE = 44100
-    p = pyaudio.PyAudio()
-    stream = p.open(
-        format=FORMAT,
-        channels=CHANNELS,
-        rate=RATE,
-        input=True,
-        input_device_index=2,
-        frames_per_buffer=CHUNK,
-    )
-    all_frames = []
     textArea = driver.find_element(by=By.ID, value="article")
     textArea.send_keys(Keys.TAB)
+    combined_audio = AudioSegment.empty()
     for text_block in split_text(text):
         time.sleep(1)
         textArea.click()
@@ -116,31 +118,31 @@ def get_speechify_narration(
         time.sleep(1)
         textArea.send_keys(text_block)
         time.sleep(15)
-        playButton = driver.find_element(by=By.CLASS_NAME, value="ttso-iframe-play")
-        time.sleep(1)
+        playButton = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "ttso-iframe-play"))
+        )
         playButton.click()
-
-        frames = []
-        continue_recording = [True] * 300 + [False]
-        once_only_trigger = True
-        start_recording = False
-        while True:
-            data = stream.read(CHUNK)
-            there_is_input = detect_input_audio(data, 100)
-            print(f"{there_is_input}, ")
-            frames.append(data)
-            continue_recording.append(there_is_input)
-
-            if continue_recording[-1] and once_only_trigger:
-                start_recording = True
-            if start_recording and once_only_trigger:
-                frames = frames[-10:]
-                once_only_trigger = False
-
-            if not any(continue_recording[-300:]):
-                frames = frames[:-270]
-                break
-        all_frames = all_frames + frames
+        time.sleep(1)
+        WebDriverWait(driver, 1000).until(element_has_changed(playButton))
+        logs_raw = driver.get_log("performance")
+        logs = [json.loads(lr["message"])["message"] for lr in logs_raw]
+        for index, log in enumerate(filter(log_filter, logs)):
+            resp_url = log["params"]["response"]["url"]
+            resp_type = log["params"]["response"]["headers"]["content-type"]
+            if (
+                "https://audio.api.speechify.dev/generateAudioFiles" not in resp_url
+                or resp_type != "application/json; charset=utf-8"
+            ):
+                continue
+            request_id = log["params"]["requestId"]
+            print(f"Caught {resp_url} at index {index}")
+            response = driver.execute_cdp_cmd(
+                "Network.getResponseBody", {"requestId": request_id}
+            )
+            body = json.loads(response["body"])
+            audio_data = base64.b64decode(body["audioStream"])
+            audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="ogg")
+            combined_audio += audio_segment
         content = driver.find_element(by=By.ID, value="pdf-reader-content")
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", content, "display: none;"
@@ -149,17 +151,9 @@ def get_speechify_narration(
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", textArea, ""
         )
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    wf = wave.open(output_filename, "wb")
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b"".join(all_frames))
-    wf.close()
-    AudioSegment.from_wav(output_filename).export(
-        output_filename.replace(".wav", ".mp3"), format="mp3"
+    combined_audio.export(f"{output_path}/{output_filename}", format="wav")
+    AudioSegment.from_wav(f"{output_path}/{output_filename}").export(
+        f"{output_path}/{output_filename.replace('.wav', '.mp3')}", format="mp3"
     )
     time.sleep(10)
     driver.quit()
