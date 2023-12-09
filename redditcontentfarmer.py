@@ -602,11 +602,11 @@ class RedditContentFarmer:
         self.__cloud_logger.log_text("Compositing audio and video files...")
         title_narration = AudioFileClip(output_path + "/title_narration.mp3")
         title_narration = title_narration.set_duration(
-            round(title_narration.duration, 2)
+            math.floor(title_narration.duration * 100) / 100
         )
         story_narration = AudioFileClip(output_path + "/story_narration.mp3")
         story_narration = story_narration.set_duration(
-            round(story_narration.duration, 2)
+            math.floor(story_narration.duration * 100) / 100
         )
         narration = concatenate_audioclips([title_narration, story_narration])
         if hasMusic:
