@@ -670,7 +670,9 @@ class RedditContentFarmer:
         self.__cloud_logger.log_text("Loading session file...")
         if not os.path.exists("instagram_session/session.json"):
             self.__logger.debug("Session file not found, creating empty file...")
-            self.__cloud_logger.log_text("Session file not found, creating empty file...")
+            self.__cloud_logger.log_text(
+                "Session file not found, creating empty file..."
+            )
             os.makedirs("instagram_session")
             with open("instagram_session/session.json", "w") as file:
                 json.dump({}, file)
@@ -695,7 +697,6 @@ class RedditContentFarmer:
         self.__logger.debug("Updated used_stories.txt")
         self.__cloud_logger.log_text("Updated used_stories.txt")
 
-
     def __del__(self):
         """
         Kill browser processes
@@ -716,8 +717,8 @@ class RedditContentFarmer:
         Initialize the logger\n
         :param verbose: Whether to enable verbose logging
         """
-        self.__logger = logging.getLogger("reddit_content_cultivator")
-        self.__cloud_logger = cloud_logging.Client().logger("reddit_content_cultivator")
+        self.__logger = logging.getLogger("RedditContentFarmer")
+        self.__cloud_logger = cloud_logging.Client().logger("RedditContentFarmer")
         self.__logger.setLevel(logging.DEBUG)
         if verbose:
             formatter = logging.Formatter("[%(funcName)s] %(message)s")
