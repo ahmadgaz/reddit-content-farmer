@@ -15,15 +15,6 @@ from selenium.webdriver.support import expected_conditions as EC
 nltk.download("punkt")
 
 
-urls = [
-    "https://speechify.com/text-to-speech-online/?ttsvoice=snoop&ttsgender=male&ttslang=English",
-    "https://speechify.com/text-to-speech-online/?ttsvoice=mrbeast&ttsgender=male&ttslang=English",
-    "https://speechify.com/text-to-speech-online/?ttsvoice=gwyneth&ttsgender=female&ttslang=English",
-    "https://speechify.com/text-to-speech-online/?ttsvoice=henry&ttsgender=male&ttslang=English",
-    "https://speechify.com/text-to-speech-online/?ttslang=English&ttsgender=female&ttsvoice=Jane",
-]
-
-
 class element_has_changed:
     def __init__(self, element):
         self.element = element
@@ -90,31 +81,35 @@ def get_speechify_narration(
     output_filename: str = "output.wav",
 ):
     suppress_exception_in_del(uc)
-    if narrator == "snoop":
-        url = urls[0]
-    elif narrator == "mrbeast":
-        url = urls[1]
-    elif narrator == "gwyneth":
-        url = urls[2]
-    elif narrator == "male":
-        url = urls[3]
-    elif narrator == "female":
-        url = urls[4]
-    else:
-        url = urls[1]
+
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     driver = uc.Chrome(options=options)
-    print(f"URL: {url}")
-    driver.get(url)
+    driver.get("https://speechify.com/text-to-speech-online/")
+    # Set a value in local storage
+    if narrator == "snoop":
+        narrator = "resemble.snoop"
+    elif narrator == "female":
+        narrator = "azure.Jane"
+    elif narrator == "male":
+        narrator = "speechify.henry"
+    else:
+        narrator = f"speechify.{narrator}"
+
+    # Set the narrator in local storage
+    driver.execute_script(
+        f"window.localStorage.setItem('activeVoiceID', '{narrator}');"
+    )
+    value = driver.execute_script("return window.localStorage.getItem('key');")
+    print("Value in local storage for 'key':", value)
+
     text = remove_non_bmp_characters(text)
     textArea = driver.find_element(by=By.ID, value="article")
     textArea.send_keys(Keys.TAB)
     combined_audio = AudioSegment.empty()
-    print(driver.current_url)
     for text_block in split_text(text):
         time.sleep(1)
         textArea.click()
