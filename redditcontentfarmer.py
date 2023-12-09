@@ -732,7 +732,7 @@ class RedditContentFarmer:
         os.system("killall -KILL chromedriver")
         os.system("killall -KILL chrome")
         os.system("killall -KILL IEDriverServer")
-        os.system("sudo shutdown -h now")
+        # os.system("sudo shutdown -h now")
 
     def __init_logger_(self, verbose: bool) -> None:
         """

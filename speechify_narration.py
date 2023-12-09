@@ -114,6 +114,7 @@ def get_speechify_narration(
     textArea = driver.find_element(by=By.ID, value="article")
     textArea.send_keys(Keys.TAB)
     combined_audio = AudioSegment.empty()
+    print(driver.current_url)
     for text_block in split_text(text):
         time.sleep(1)
         textArea.click()
