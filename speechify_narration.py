@@ -114,6 +114,7 @@ def get_speechify_narration(
     driver.execute_script(
         f"window.localStorage.setItem('activeVoiceID', '{narrator}');"
     )
+    driver.refresh()
     value = driver.execute_script(
         "return window.localStorage.getItem('activeVoiceID');"
     )

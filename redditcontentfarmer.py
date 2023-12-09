@@ -309,7 +309,7 @@ class RedditContentFarmer:
         for word in words:
             start_time = word.start_sec + title_narration_duration
             end_time = word.end_sec + title_narration_duration
-            duration = math.floor((end_time - start_time + 0.025)*100)/100
+            duration = math.floor((end_time - start_time) * 100) / 100
             self.__logger.debug(
                 f"Word: {word.word.upper()}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
             )
@@ -376,7 +376,7 @@ class RedditContentFarmer:
 
         start_time = 0
         end_time = words[-1].end_sec
-        duration = math.floor((end_time - start_time + 0.025)*100)/100
+        duration = math.floor((end_time - start_time) * 100) / 100
         self.__logger.debug(
             f"Title image: {title_image}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
         )
