@@ -108,6 +108,7 @@ def get_speechify_narration(
     options.add_argument("--disable-dev-shm-usage")
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     driver = uc.Chrome(options=options)
+    print(f"URL: {url}")
     driver.get(url)
     text = remove_non_bmp_characters(text)
     textArea = driver.find_element(by=By.ID, value="article")

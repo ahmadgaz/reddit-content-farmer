@@ -180,6 +180,7 @@ class RedditContentFarmer:
             )
 
         self.__posts = []
+        self.__subreddit = subreddit
         iterations = 0
         max_iterations = 1000
 
@@ -440,7 +441,7 @@ class RedditContentFarmer:
         draw.ellipse((0, 0) + size, fill=255)
 
         if not os.path.exists(f"subreddit_icons/{subreddit}.png"):
-            subreddit = "reddit"
+            subreddit = "Reddit"
         im = Image.open(f"subreddit_icons/{subreddit}.png")
         im = im.convert("RGBA")
         pfp = im.resize((60, 60))
@@ -528,7 +529,7 @@ class RedditContentFarmer:
         self.__ceate_title_image_(
             text=self.__posts[0].title,
             username=self.__posts[0].author.name,
-            subreddit=self.__posts[0].subreddit.name,
+            subreddit=self.__subreddit,
             output_path=output_path,
         )
 
