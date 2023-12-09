@@ -168,7 +168,7 @@ def get_speechify_narration(
                 for sentence_chunk in body["speechMarks"]["chunks"]
                 for word_chunk in sentence_chunk["chunks"]
             ]
-            start_time += (math.floor((len(audio_segment) / 1000) * 100) / 100,)
+            start_time += math.floor((len(audio_segment) / 1000) * 100) / 100
         content = driver.find_element(by=By.ID, value="pdf-reader-content")
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", content, "display: none;"
