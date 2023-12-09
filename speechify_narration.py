@@ -103,7 +103,9 @@ def get_speechify_narration(
     driver.execute_script(
         f"window.localStorage.setItem('activeVoiceID', '{narrator}');"
     )
-    value = driver.execute_script("return window.localStorage.getItem('key');")
+    value = driver.execute_script(
+        "return window.localStorage.getItem('activeVoiceID');"
+    )
     print("Value in local storage for 'key':", value)
 
     text = remove_non_bmp_characters(text)
