@@ -682,7 +682,8 @@ class RedditContentFarmer:
         cl = Client()
         self.__logger.debug("Loading session file...")
         self.__cloud_logger.log_text("Loading session file...")
-        if not os.path.exists("instagram_session/session.json"):
+        session_exists = os.path.exists("instagram_session/session.json")
+        if not session_exists:
             self.__logger.debug("Session file not found, creating empty file...")
             self.__cloud_logger.log_text(
                 "Session file not found, creating empty file..."
@@ -690,8 +691,13 @@ class RedditContentFarmer:
             os.makedirs("instagram_session")
             with open("instagram_session/session.json", "w") as file:
                 json.dump({}, file)
-        cl.load_settings("instagram_session/session.json")
+        else:
+            cl.load_settings("instagram_session/session.json")
         cl.login(username, password)
+        if not session_exists:
+            self.__logger.debug("Saving session to session file...")
+            self.__cloud_logger.log_text("Saving session to session file...")
+            cl.dump_settings("instagram_session/session.json")
         cl.get_timeline_feed()
         if self.__audio_duration < 60:
             cl.video_upload(
