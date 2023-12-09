@@ -12,6 +12,7 @@ import logging
 import contextlib
 from typing import Literal
 from timeout import timeout
+from google.cloud import logging as cloud_logging
 
 
 class RedditContentFarmer:
@@ -67,12 +68,16 @@ class RedditContentFarmer:
         self.__posts = []
         self.__comments = {}
         self.__logger.debug("RedditContentFarmer initialized")
+        self.__cloud_logger.log_text("RedditContentFarmer initialized")
 
     @timeout(1200, os.strerror(errno.ETIMEDOUT))
     def story_already_used(
         self, submission: "RedditContentFarmer.PrawModels.Submission"
     ):
         self.__logger.debug(
+            f"Checking if postid: {submission.id} has already been used..."
+        )
+        self.__cloud_logger.log_text(
             f"Checking if postid: {submission.id} has already been used..."
         )
         if not os.path.exists("used_stories.txt"):
@@ -89,6 +94,7 @@ class RedditContentFarmer:
         self, post: "RedditContentFarmer.PrawModels.Submission"
     ):
         self.__logger.debug(f"Adding postid: {post.id} to used_stories.txt...")
+        self.__cloud_logger.log_text(f"Adding postid: {post.id} to used_stories.txt...")
         if not os.path.exists("used_stories.txt"):
             raise ValueError(
                 "Make sure you have a used_stories.txt file in the working directory of your script to track posts that have been used."
@@ -105,9 +111,15 @@ class RedditContentFarmer:
             self.__logger.debug(
                 f"Postid: {submission.id} has already been used, skipping..."
             )
+            self.__cloud_logger.log_text(
+                f"Postid: {submission.id} has already been used, skipping..."
+            )
         valid_title = "r/" not in submission.title and "reddit" not in submission.title
         if not valid_title:
             self.__logger.debug(
+                f"Postid: {submission.id} has an invalid title, skipping..."
+            )
+            self.__cloud_logger.log_text(
                 f"Postid: {submission.id} has an invalid title, skipping..."
             )
         below_word_limit = len(submission.selftext.split()) < word_limit
@@ -115,9 +127,15 @@ class RedditContentFarmer:
             self.__logger.debug(
                 f"Postid: {submission.id} is above the word limit, skipping..."
             )
+            self.__cloud_logger.log_text(
+                f"Postid: {submission.id} is above the word limit, skipping..."
+            )
         submission_not_in_posts = submission not in self.__posts
         if not submission_not_in_posts:
             self.__logger.debug(
+                f"Postid: {submission.id} has already been added, skipping..."
+            )
+            self.__cloud_logger.log_text(
                 f"Postid: {submission.id} has already been added, skipping..."
             )
         valid_submission = (
@@ -143,6 +161,7 @@ class RedditContentFarmer:
         :param span: Time span of posts to get
         """
         self.__logger.debug("Getting posts...")
+        self.__cloud_logger.log_text("Getting posts...")
 
         max_count = 500
 
@@ -222,6 +241,7 @@ class RedditContentFarmer:
                 iterations += 1
 
         self.__logger.debug("Got posts")
+        self.__cloud_logger.log_text("Got posts")
         return self.__posts
 
     @timeout(1200, os.strerror(errno.ETIMEDOUT))
@@ -232,6 +252,7 @@ class RedditContentFarmer:
         :param limit: Maximum number of comments to get
         """
         self.__logger.debug("Getting comments...")
+        self.__cloud_logger.log_text("Getting comments...")
         self.__comments = {}
         for post in self.__posts:
             self.__comments[post.id] = []
@@ -246,6 +267,7 @@ class RedditContentFarmer:
                     break
 
         self.__logger.debug("Got comments")
+        self.__cloud_logger.log_text("Got comments")
         return self.__comments
 
     @timeout(1200, os.strerror(errno.ETIMEDOUT))
@@ -288,6 +310,9 @@ class RedditContentFarmer:
             end_time = word.end_sec + title_narration_duration
             duration = end_time - start_time + 0.025
             self.__logger.debug(
+                f"Word: {word.word.upper()}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
+            )
+            self.__cloud_logger.log_text(
                 f"Word: {word.word.upper()}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
             )
             word_stroke_layer = (
@@ -352,6 +377,9 @@ class RedditContentFarmer:
         end_time = words[-1].end_sec
         duration = end_time - start_time + 0.025
         self.__logger.debug(
+            f"Title image: {title_image}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
+        )
+        self.__cloud_logger.log_text(
             f"Title image: {title_image}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
         )
         title_image_clip = ImageClip(title_image).set_duration(duration)
@@ -432,14 +460,15 @@ class RedditContentFarmer:
         output_path: str = "output",
         length_per_clip: int = 14,
         hasMusic: bool = False,
-        fontsize: int = 24,
-        font: str = "Arial-Black",
-        color: str = "yellow",
+        font="Arial-Black",
+        fontsize: int = 60,
+        color: str = "white",
         stroke_width: int = 10,
         stroke_color: str = "black",
     ):
         """ """
         self.__logger.debug("Creating video...")
+        self.__cloud_logger.log_text("Creating video...")
 
         if len(self.__posts) == 0:
             raise ValueError("Please get posts before creating a video")
@@ -493,6 +522,7 @@ class RedditContentFarmer:
 
         # Creates the mp3 files for the title and story in the output folder
         self.__logger.debug("Getting narration audio files...")
+        self.__cloud_logger.log_text("Getting narration audio files...")
         get_speechify_narration(
             narrator=narrator,
             text=self.__posts[0].title,
@@ -508,6 +538,7 @@ class RedditContentFarmer:
 
         # Get the duration of the output from the narration audio files
         self.__logger.debug("Getting narration audio duration...")
+        self.__cloud_logger.log_text("Getting narration audio duration...")
         self.__audio_duration = 0
         with contextlib.closing(
             wave.open(output_path + "/title_narration.wav", "rb")
@@ -524,6 +555,7 @@ class RedditContentFarmer:
 
         # Get the background video clips and concatenate them
         self.__logger.debug("Getting background video clips...")
+        self.__cloud_logger.log_text("Getting background video clips...")
         num_iterations = self.__audio_duration // length_per_clip
         remainder = self.__audio_duration % length_per_clip
         background_video_clips = []
@@ -535,6 +567,9 @@ class RedditContentFarmer:
 
             background_video_path = random.choice(os.listdir("background_videos/"))
             self.__logger.debug(
+                f"Clip {i}: {background_video_path}, Duration: {clip_duration}"
+            )
+            self.__cloud_logger.log_text(
                 f"Clip {i}: {background_video_path}, Duration: {clip_duration}"
             )
             full_clip = VideoFileClip("background_videos/" + background_video_path)
@@ -551,6 +586,7 @@ class RedditContentFarmer:
 
         # Get the background music and composite it with the narration audio
         self.__logger.debug("Compositing audio and video files...")
+        self.__cloud_logger.log_text("Compositing audio and video files...")
         title_narration = AudioFileClip(output_path + "/title_narration.mp3")
         story_narration = AudioFileClip(output_path + "/story_narration.mp3")
         narration = concatenate_audioclips([title_narration, story_narration])
@@ -571,6 +607,7 @@ class RedditContentFarmer:
 
         # Create the subtitles
         self.__logger.debug("Creating subtitles...")
+        self.__cloud_logger.log_text("Creating subtitles...")
         leopard = pvleopard.create(access_key=pvleopard_access_key)
         title_transcript, title_words = leopard.process_file(
             output_path + "/title_narration.wav"
@@ -596,6 +633,7 @@ class RedditContentFarmer:
 
         # Composite the background video and the subtitles
         self.__logger.debug("Compositing background video and subtitles...")
+        self.__cloud_logger.log_text("Compositing background video and subtitles...")
         video = CompositeVideoClip([background_video] + text_clips)
         video.write_videofile(
             output_path + "/output.mp4",
@@ -616,6 +654,7 @@ class RedditContentFarmer:
         """
 
         self.__logger.debug("Uploading to Instagram...")
+        self.__cloud_logger.log_text("Uploading to Instagram...")
         try:
             from instagrapi import Client
         except ModuleNotFoundError:
@@ -628,8 +667,10 @@ class RedditContentFarmer:
 
         cl = Client()
         self.__logger.debug("Loading session file...")
+        self.__cloud_logger.log_text("Loading session file...")
         if not os.path.exists("instagram_session/session.json"):
             self.__logger.debug("Session file not found, creating empty file...")
+            self.__cloud_logger.log_text("Session file not found, creating empty file...")
             os.makedirs("instagram_session")
             with open("instagram_session/session.json", "w") as file:
                 json.dump({}, file)
@@ -646,6 +687,14 @@ class RedditContentFarmer:
                 path=input_path,
                 caption=caption,
             )
+        self.__logger.debug("Uploaded to Instagram")
+        self.__cloud_logger.log_text("Uploaded to Instagram")
+        self.__logger.debug("Updating used_stories.txt...")
+        self.__cloud_logger.log_text("Updating used_stories.txt...")
+        self.add_story_title_to_file(self.__posts[0])
+        self.__logger.debug("Updated used_stories.txt")
+        self.__cloud_logger.log_text("Updated used_stories.txt")
+
 
     def __del__(self):
         """
@@ -668,6 +717,7 @@ class RedditContentFarmer:
         :param verbose: Whether to enable verbose logging
         """
         self.__logger = logging.getLogger("reddit_content_cultivator")
+        self.__cloud_logger = cloud_logging.Client().logger("reddit_content_cultivator")
         self.__logger.setLevel(logging.DEBUG)
         if verbose:
             formatter = logging.Formatter("[%(funcName)s] %(message)s")

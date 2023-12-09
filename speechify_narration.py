@@ -35,6 +35,11 @@ class element_has_changed:
         return current_html != self.initial_html
 
 
+def remove_non_bmp_characters(text):
+    """Remove non-BMP (Basic Multilingual Plane) characters from a string."""
+    return "".join(char for char in text if ord(char) <= 0xFFFF)
+
+
 def split_text(text):
     # Split the text into sentences
     sentences = nltk.sent_tokenize(text)
@@ -107,6 +112,7 @@ def get_speechify_narration(
     # options.add_experimental_option("prefs", prefs)
     driver = uc.Chrome(options=options)
     driver.get(url)
+    text = remove_non_bmp_characters(text)
     textArea = driver.find_element(by=By.ID, value="article")
     textArea.send_keys(Keys.TAB)
     combined_audio = AudioSegment.empty()
