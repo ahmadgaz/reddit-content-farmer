@@ -158,7 +158,7 @@ def get_speechify_narration(
                     }
                     for word_chunk in sentence_chunk["chunks"]
                 )
-                for sentence_chunk in body["chunks"]
+                for sentence_chunk in body["speechMarks"]["chunks"]
             ]
             start_time += len(audio_segment) / 1000
         content = driver.find_element(by=By.ID, value="pdf-reader-content")
