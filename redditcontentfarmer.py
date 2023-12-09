@@ -460,7 +460,7 @@ class RedditContentFarmer:
         output_path: str = "output",
         length_per_clip: int = 14,
         hasMusic: bool = False,
-        font="Arial-Black",
+        font: str = "Lato-Black",
         fontsize: int = 60,
         color: str = "white",
         stroke_width: int = 10,

@@ -1,6 +1,6 @@
 # Reddit Content Farmer
 
-Reddit Content Farmer allows you to create short form video clips from Reddit posts and comments.
+Reddit Content Farmer allows you to create short form video clips from Reddit posts and comments. Run this script from a headless server to automatically generate content for your social media accounts. The script will automatically upload the video to instagram for you.
 
 ## Features
 
@@ -20,12 +20,13 @@ Reddit Content Farmer allows you to create short form video clips from Reddit po
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/your-username/reddit_content_farmer.git`
-2. Create a virtual environment: `python -m venv new-env`
-3. Activate the virtual environment: `source new-env/bin/activate`
-4. Install the required dependencies: `pip install -r requirements.txt`
-5. Create a folder called `background_music` and add your background music mp3 files to it. A random file will be selected for each video.
-6. Create a folder called `background_videos` and add your background video mp4 files to it. A random file will be selected for each video.
-7. Add your environment variables to a file called `.env` in the project directory. The following variables are required:
+2. Make sure google chrome, ffmpeg, pyaudio, and imagemagick are installed on your system.
+3. Create a virtual environment: `python -m venv new-env`
+4. Activate the virtual environment: `source new-env/bin/activate`
+5. Install the remaining dependencies: `pip install -r requirements.txt`
+6. Create a folder called `background_music` and add your background music mp3 files to it. A random file will be selected for each video.
+7. Create a folder called `background_videos` and add your background video mp4 files to it. A random file will be selected for each video.
+8. Add your environment variables to a file called `.env` in the project directory. The following variables are required:
     - `REDDIT_CLIENT_ID`
     - `REDDIT_CLIENT_SECRET`
     - `REDDIT_USER_AGENT`

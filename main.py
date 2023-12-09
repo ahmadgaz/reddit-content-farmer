@@ -16,7 +16,7 @@ rcf = RedditContentFarmer(
     track_used_posts=True,
 )
 
-rcf.get_posts(subreddit=random.choice(subreddits), word_limit=1000, span="week")
+rcf.get_posts(subreddit=random.choice(subreddits), word_limit=600, span="week")
 
 rcf.create_video(
     pvleopard_access_key=os.getenv("PVLEOPARD_ACCESS_KEY"),
