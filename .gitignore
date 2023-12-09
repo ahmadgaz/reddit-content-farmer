@@ -3,5 +3,6 @@
 /background_music
 /__pycache__
 /.vscode
+/instagram_session
 used_stories.txt
 .env
