@@ -404,9 +404,9 @@ class RedditContentFarmer:
                 "Please make sure you have a subreddit_icons folder with `.png` files in the working directory of your script."
             )
 
-        if not os.path.exists(f"subreddit_icons/reddit.png"):
+        if not os.path.exists(f"subreddit_icons/Reddit.png"):
             raise ValueError(
-                f"Please make sure you have the default `reddit.png` file in your subreddit_icons folder."
+                f"Please make sure you have the default `Reddit.png` file in your subreddit_icons folder."
             )
 
         lines = []
