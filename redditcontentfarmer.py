@@ -536,13 +536,13 @@ class RedditContentFarmer:
         # Creates the mp3 files for the title and story in the output folder
         self.__logger.debug("Getting narration audio files...")
         self.__cloud_logger.log_text("Getting narration audio files...")
-        get_speechify_narration(
+        title_words = get_speechify_narration(
             narrator=narrator,
             text=self.__posts[0].title,
             output_path=output_path,
             output_filename="title_narration.wav",
         )
-        get_speechify_narration(
+        story_words = get_speechify_narration(
             narrator=narrator,
             text=self.__posts[0].selftext,
             output_path=output_path,
@@ -621,13 +621,13 @@ class RedditContentFarmer:
         # Create the subtitles
         self.__logger.debug("Creating subtitles...")
         self.__cloud_logger.log_text("Creating subtitles...")
-        leopard = pvleopard.create(access_key=pvleopard_access_key)
-        title_transcript, title_words = leopard.process_file(
-            output_path + "/title_narration.wav"
-        )
-        story_transcript, story_words = leopard.process_file(
-            output_path + "/story_narration.wav"
-        )
+        # leopard = pvleopard.create(access_key=pvleopard_access_key)
+        # title_transcript, title_words = leopard.process_file(
+        #     output_path + "/title_narration.wav"
+        # )
+        # story_transcript, story_words = leopard.process_file(
+        #     output_path + "/story_narration.wav"
+        # )
         title_image_clips = self.__create_title_image_clip_(
             words=title_words,
             title_image=f"{output_path}/title.png",

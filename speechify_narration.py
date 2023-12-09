@@ -11,6 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+# Work in progress
 
 nltk.download("punkt")
 
@@ -81,6 +82,8 @@ def get_speechify_narration(
     output_filename: str = "output.wav",
 ):
     suppress_exception_in_del(uc)
+    words = []
+    start_time = 0
 
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")
@@ -145,6 +148,19 @@ def get_speechify_narration(
             audio_data = base64.b64decode(body["audioStream"])
             audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="ogg")
             combined_audio += audio_segment
+            # Get words and their timings
+            words += [
+                (
+                    {
+                        "word": word_chunk["value"],
+                        "start_sec": int(word_chunk["startTime"]) / 1000 + start_time,
+                        "end_sec": int(word_chunk["endTime"]) / 1000 + start_time,
+                    }
+                    for word_chunk in sentence_chunk["chunks"]
+                )
+                for sentence_chunk in body["chunks"]
+            ]
+            start_time += len(audio_segment) / 1000
         content = driver.find_element(by=By.ID, value="pdf-reader-content")
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", content, "display: none;"
@@ -159,3 +175,4 @@ def get_speechify_narration(
     )
     time.sleep(10)
     driver.quit()
+    return words
