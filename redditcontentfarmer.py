@@ -479,8 +479,8 @@ class RedditContentFarmer:
         :param stroke_width: Stroke width of the subtitles
         :param stroke_color: Stroke color of the subtitles
         """
-        self.__logger.debug("Creating video...")
-        self.__cloud_logger.log_text("Creating video...")
+        self.__logger.debug(f"Creating video with narrator {narrator}...")
+        self.__cloud_logger.log_text(f"Creating video with narrator {narrator}...")
 
         if len(self.__posts) == 0:
             raise ValueError("Please get posts before creating a video")
