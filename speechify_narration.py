@@ -16,6 +16,13 @@ from selenium.webdriver.support import expected_conditions as EC
 nltk.download("punkt")
 
 
+class Word:
+    def __init__(self, word, start_sec, end_sec):
+        self.word = word
+        self.start_sec = start_sec
+        self.end_sec = end_sec
+
+
 class element_has_changed:
     def __init__(self, element):
         self.element = element
@@ -150,11 +157,11 @@ def get_speechify_narration(
             combined_audio += audio_segment
             # Get words and their timings
             words += [
-                {
-                    "word": word_chunk["value"],
-                    "start_sec": int(word_chunk["startTime"]) / 1000 + start_time,
-                    "end_sec": int(word_chunk["endTime"]) / 1000 + start_time,
-                }
+                Word(
+                    word_chunk["value"],
+                    int(word_chunk["startTime"]) / 1000 + start_time,
+                    int(word_chunk["endTime"]) / 1000 + start_time,
+                )
                 for sentence_chunk in body["speechMarks"]["chunks"]
                 for word_chunk in sentence_chunk["chunks"]
             ]
