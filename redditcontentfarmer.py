@@ -466,7 +466,19 @@ class RedditContentFarmer:
         stroke_width: int = 10,
         stroke_color: str = "black",
     ):
-        """ """
+        """
+        Create a video from posts\n
+        :param pvleopard_access_key: Access key for the pvleopard API
+        :param narrator: Narrator of the video
+        :param output_path: Path to the output folder
+        :param length_per_clip: Length of each background video clip
+        :param hasMusic: Whether to add background music
+        :param font: Font of the subtitles
+        :param fontsize: Font size of the subtitles
+        :param color: Color of the subtitles
+        :param stroke_width: Stroke width of the subtitles
+        :param stroke_color: Stroke color of the subtitles
+        """
         self.__logger.debug("Creating video...")
         self.__cloud_logger.log_text("Creating video...")
 
@@ -637,8 +649,10 @@ class RedditContentFarmer:
         video = CompositeVideoClip([background_video] + text_clips)
         video.write_videofile(
             output_path + "/output.mp4",
-            temp_audiofile=output_path + "/temp_output",
+            temp_audiofile=output_path + "/temp_output.mp3",
             fps=30,
+            verbose=False,
+            logger=None,
         )
 
     @timeout(1200, os.strerror(errno.ETIMEDOUT))
@@ -711,6 +725,7 @@ class RedditContentFarmer:
         os.system("killall -KILL chromedriver")
         os.system("killall -KILL chrome")
         os.system("killall -KILL IEDriverServer")
+        os.system("sudo shutdown -h now")
 
     def __init_logger_(self, verbose: bool) -> None:
         """
