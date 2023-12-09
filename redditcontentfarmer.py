@@ -557,13 +557,13 @@ class RedditContentFarmer:
         ) as f:
             frames = f.getnframes()
             rate = f.getframerate()
-            self.__audio_duration += math.floor(frames / float(rate))
+            self.__audio_duration += math.floor(frames / float(rate)) + 1
         with contextlib.closing(
             wave.open(output_path + "/story_narration.wav", "rb")
         ) as f:
             frames = f.getnframes()
             rate = f.getframerate()
-            self.__audio_duration += math.floor(frames / float(rate))
+            self.__audio_duration += math.floor(frames / float(rate)) + 1
 
         # Get the background video clips and concatenate them
         self.__logger.debug("Getting background video clips...")
