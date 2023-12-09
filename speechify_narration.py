@@ -150,15 +150,13 @@ def get_speechify_narration(
             combined_audio += audio_segment
             # Get words and their timings
             words += [
-                (
-                    {
-                        "word": word_chunk["value"],
-                        "start_sec": int(word_chunk["startTime"]) / 1000 + start_time,
-                        "end_sec": int(word_chunk["endTime"]) / 1000 + start_time,
-                    }
-                    for word_chunk in sentence_chunk["chunks"]
-                )
+                {
+                    "word": word_chunk["value"],
+                    "start_sec": int(word_chunk["startTime"]) / 1000 + start_time,
+                    "end_sec": int(word_chunk["endTime"]) / 1000 + start_time,
+                }
                 for sentence_chunk in body["speechMarks"]["chunks"]
+                for word_chunk in sentence_chunk["chunks"]
             ]
             start_time += len(audio_segment) / 1000
         content = driver.find_element(by=By.ID, value="pdf-reader-content")
