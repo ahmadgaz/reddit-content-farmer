@@ -20,7 +20,7 @@ class RedditContentFarmer:
     Allows you to create content from Reddit posts
     """
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def __init__(
         self,
         client_id: str,
@@ -70,7 +70,7 @@ class RedditContentFarmer:
         self.__logger.debug("RedditContentFarmer initialized")
         self.__cloud_logger.log_text("RedditContentFarmer initialized")
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def story_already_used(
         self, submission: "RedditContentFarmer.PrawModels.Submission"
     ):
@@ -89,7 +89,7 @@ class RedditContentFarmer:
                 return True
         return False
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def add_story_title_to_file(
         self, post: "RedditContentFarmer.PrawModels.Submission"
     ):
@@ -102,7 +102,7 @@ class RedditContentFarmer:
         with open("used_stories.txt", "a") as file:
             file.write(post.title + "\n")
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def __validate_submission_(
         self, submission: "RedditContentFarmer.PrawModels.Submission", word_limit: int
     ):
@@ -143,7 +143,7 @@ class RedditContentFarmer:
         )
         return valid_submission
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def get_posts(
         self,
         subreddit: str,
@@ -245,7 +245,7 @@ class RedditContentFarmer:
         self.__cloud_logger.log_text("Got posts")
         return self.__posts
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def get_comments(self, word_limit: int = 200, limit: int = 6):
         """
         Get comments from posts\n
@@ -271,7 +271,7 @@ class RedditContentFarmer:
         self.__cloud_logger.log_text("Got comments")
         return self.__comments
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def __create_subtitle_clips_(
         self,
         words: list,
@@ -352,7 +352,7 @@ class RedditContentFarmer:
 
         return word_clips
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def __create_title_image_clip_(
         self,
         words: list,
@@ -389,7 +389,7 @@ class RedditContentFarmer:
 
         return title_image_clips
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def __ceate_title_image_(
         self, text: str, username: str, subreddit: str, output_path: str
     ):
@@ -453,7 +453,7 @@ class RedditContentFarmer:
         img.paste(pfp, (5, 5), mask)
         img.save(output_path + "/title.png")
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def create_video(
         self,
         pvleopard_access_key: str,
@@ -662,7 +662,7 @@ class RedditContentFarmer:
             logger=None,
         )
 
-    @timeout(1200, os.strerror(errno.ETIMEDOUT))
+    @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def upload_to_instagram(
         self, username: str, password: str, input_path: str, caption: str
     ):
