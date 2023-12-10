@@ -102,21 +102,19 @@ def get_speechify_narration(
     driver.get("https://speechify.com/text-to-speech-online/")
     # Set a value in local storage
     if narrator == "snoop":
-        narrator = "resemble.snoop"
+        speechify_narrator = "resemble.snoop"
     elif narrator == "female":
-        narrator = "azure.Jane"
+        speechify_narrator = "azure.Jane"
     elif narrator == "male":
-        narrator = "speechify.henry"
+        speechify_narrator = "speechify.henry"
     else:
-        narrator = f"speechify.{narrator}"
+        speechify_narrator = f"speechify.{narrator}"
 
     # Set the narrator in local storage
     driver.execute_script(
-        f"window.localStorage.setItem('activeVoiceID', '{narrator}');"
+        f"window.localStorage.setItem('activeVoiceID', '{speechify_narrator}');"
     )
-    time.sleep(1)
     driver.refresh()
-    time.sleep(1)
     value = driver.execute_script(
         "return window.localStorage.getItem('activeVoiceID');"
     )
