@@ -1,4 +1,4 @@
-# Reddit Content Farmer
+# WIP Reddit Content Farmer
 
 Reddit Content Farmer allows you to create short form video clips from Reddit posts and comments. Run this script from a headless server to automatically generate content for your social media accounts. The script will automatically upload the video to instagram for you.
 
