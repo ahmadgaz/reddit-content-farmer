@@ -114,11 +114,13 @@ def get_speechify_narration(
     driver.execute_script(
         f"window.localStorage.setItem('activeVoiceID', '{narrator}');"
     )
+    time.sleep(1)
     driver.refresh()
+    time.sleep(1)
     value = driver.execute_script(
         "return window.localStorage.getItem('activeVoiceID');"
     )
-    print("Value in local storage for 'key':", value)
+    print("Value in local storage for 'activeVoiceID':", value)
 
     text = remove_non_bmp_characters(text)
     textArea = driver.find_element(by=By.ID, value="article")
@@ -184,4 +186,5 @@ def get_speechify_narration(
     )
     time.sleep(10)
     driver.quit()
+    driver.stop_client()
     return words
