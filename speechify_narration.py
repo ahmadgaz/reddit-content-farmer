@@ -101,8 +101,8 @@ def get_speechify_narration(
     driver = uc.Chrome(options=options)
     driver.get("https://speechify.com/text-to-speech-online/")
     # Set a value in local storage
-    if narrator == "snoop":
-        speechify_narrator = "resemble.snoop"
+    if narrator == "snoop" or narrator == "narrator":
+        speechify_narrator = f"resemble.{narrator}"
     elif narrator == "female":
         speechify_narrator = "azure.Jane"
     elif narrator == "male":

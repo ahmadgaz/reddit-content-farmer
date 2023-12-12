@@ -307,8 +307,10 @@ class RedditContentFarmer:
 
         word_clips = []
         for word in words:
-            start_time = word.start_sec + title_narration_duration
-            end_time = word.end_sec + title_narration_duration
+            start_time = (
+                math.floor((word.start_sec) * 100) / 100 + title_narration_duration
+            )
+            end_time = math.floor((word.end_sec) * 100) / 100 + title_narration_duration
             duration = math.floor((end_time - start_time) * 100) / 100
             self.__logger.debug(
                 f"Word: {word.word.upper()}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
@@ -384,15 +386,13 @@ class RedditContentFarmer:
             f"Title image: {title_image}, Start time: {start_time}, End time: {end_time}, Duration: {duration}"
         )
         title_image_clip = ImageClip(title_image).set_duration(duration)
-        title_image_clip = resize(title_image_clip, newsize=1.3)
+        title_image_clip = resize(title_image_clip, newsize=1.2)
         title_image_clips = [title_image_clip.set_position("center")]
 
         return title_image_clips
 
     @timeout(2400, os.strerror(errno.ETIMEDOUT))
-    def __ceate_title_image_(
-        self, text: str, username: str, subreddit: str, output_path: str
-    ):
+    def __create_title_image_(self, text: str, username: str, output_path: str):
         try:
             from PIL import Image, ImageDraw, ImageFont
         except ModuleNotFoundError:
@@ -403,17 +403,29 @@ class RedditContentFarmer:
             raise ValueError(
                 "Please make sure you have a subreddit_icons folder with `.png` files in the working directory of your script."
             )
-
         if not os.path.exists(f"subreddit_icons/Reddit.png"):
             raise ValueError(
                 f"Please make sure you have the default `Reddit.png` file in your subreddit_icons folder."
             )
 
+        def add_corners(im, rad):
+            circle = Image.new("L", (rad * 2, rad * 2), 0)
+            draw = ImageDraw.Draw(circle)
+            draw.ellipse((0, 0, rad * 2 - 1, rad * 2 - 1), fill=255)
+            alpha = Image.new("L", im.size, 255)
+            w, h = im.size
+            alpha.paste(circle.crop((0, 0, rad, rad)), (0, 0))
+            alpha.paste(circle.crop((0, rad, rad, rad * 2)), (0, h - rad))
+            alpha.paste(circle.crop((rad, 0, rad * 2, rad)), (w - rad, 0))
+            alpha.paste(circle.crop((rad, rad, rad * 2, rad * 2)), (w - rad, h - rad))
+            im.putalpha(alpha)
+            return im
+
         lines = []
         length = 0
         nextSpace = 0
         font = ImageFont.truetype("helvetica.ttf", 24)
-        userFont = ImageFont.truetype("helvetica.ttf", 20)
+        userFont = ImageFont.truetype("helvetica.ttf", 16)
         for i in range(len(text)):
             if i != 0:
                 if i % 45 == 0:
@@ -439,19 +451,28 @@ class RedditContentFarmer:
         mask = Image.new("L", size, 0)
         draw = ImageDraw.Draw(mask)
         draw.ellipse((0, 0) + size, fill=255)
-
-        if not os.path.exists(f"subreddit_icons/{subreddit}.png"):
-            subreddit = "Reddit"
-        im = Image.open(f"subreddit_icons/{subreddit}.png")
+        im = Image.open("subreddit_icons/Reddit.png")
         im = im.convert("RGBA")
         pfp = im.resize((60, 60))
-        img = Image.new("RGB", (500, len(lines) * 28 + 10), color=(30, 30, 30))
+        im = Image.open("subreddit_icons/awards.png")
+        im = im.convert("RGBA")
+        awards = im.resize((110, 27))
+        img = Image.new("RGB", (500, len(lines) * 28 + 10), color=(255, 255, 255))
         d = ImageDraw.Draw(img)
-        d.text((10, 10), text, fill=(250, 250, 250), align="left", font=font)
-        d.text((70, 10), subreddit, fill=(250, 250, 250), align="left", font=font)
-        d.text((80, 35), username, fill=(200, 200, 200), align="left", font=userFont)
+        d.text((10, 10), text, fill=(30, 30, 30), align="left", font=font)
+        d.text((80, 0), "unhinged.redditor", fill=(30, 30, 30), align="left", font=font)
+        d.text(
+            (80, 25), f"u/{username}", fill=(60, 60, 60), align="left", font=userFont
+        )
+        img.paste(awards, (75, 42))
         img.paste(pfp, (5, 5), mask)
-        img.save(output_path + "/title.png")
+        result = Image.new(img.mode, (550, len(lines) * 28 + 35), (255, 255, 255))
+        result.paste(img, (25, 20))
+        result = add_corners(result, 50)
+        result.save(output_path + "/title.png")
+        thumbnail = Image.new(img.mode, (550, 550), (255, 255, 255))
+        thumbnail.paste(img, (25, 275 - math.floor((len(lines) * 28 + 10) / 2)))
+        thumbnail.save(output_path + "/thumbnail.png")
 
     @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def create_video(
@@ -526,10 +547,11 @@ class RedditContentFarmer:
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        self.__ceate_title_image_(
+
+        self.post_title = self.__posts[0].title
+        self.__create_title_image_(
             text=self.__posts[0].title,
             username=self.__posts[0].author.name,
-            subreddit=self.__subreddit,
             output_path=output_path,
         )
 
@@ -664,7 +686,12 @@ class RedditContentFarmer:
 
     @timeout(2400, os.strerror(errno.ETIMEDOUT))
     def upload_to_instagram(
-        self, username: str, password: str, input_path: str, caption: str
+        self,
+        username: str,
+        password: str,
+        input_path: str,
+        output_path: str,
+        caption: str,
     ):
         """
         Upload a video to Instagram\n
@@ -686,6 +713,13 @@ class RedditContentFarmer:
         if not os.path.exists(input_path):
             raise ValueError("Input video not found.")
 
+        try:
+            from PIL import Image
+        except ModuleNotFoundError:
+            raise ValueError(
+                "Please install PIL by running `pip install -r requirements.txt`"
+            ) from None
+
         cl = Client()
         self.__logger.debug("Loading session file...")
         self.__cloud_logger.log_text("Loading session file...")
@@ -706,15 +740,19 @@ class RedditContentFarmer:
             self.__cloud_logger.log_text("Saving session to session file...")
             cl.dump_settings("instagram_session/session.json")
         cl.get_timeline_feed()
+        thumbnail = Image.open(output_path + "/thumbnail.png")
+        thumbnail.save(output_path + "/thumbnail.jpg")
         if self.__audio_duration < 60:
             cl.video_upload(
                 path=input_path,
                 caption=caption,
+                thumbnail=output_path + "/thumbnail.jpg",
             )
         else:
             cl.clip_upload(
                 path=input_path,
                 caption=caption,
+                thumbnail=output_path + "/thumbnail.jpg",
             )
         self.__logger.debug("Uploaded to Instagram")
         self.__cloud_logger.log_text("Uploaded to Instagram")
@@ -747,9 +785,18 @@ class RedditContentFarmer:
         """
         self.__logger = logging.getLogger("RedditContentFarmer")
         self.__cloud_logger = cloud_logging.Client().logger("RedditContentFarmer")
+        # self.__cloud_logger = FakeCloudLogger()
         self.__logger.setLevel(logging.DEBUG)
         if verbose:
             formatter = logging.Formatter("[%(funcName)s] %(message)s")
             stream_handler = logging.StreamHandler()
             stream_handler.setFormatter(formatter)
             self.__logger.addHandler(stream_handler)
+
+
+# class FakeCloudLogger:
+#     def __init__(self):
+#         print("Fake Logger")
+
+#     def log_text(self, log: str):
+#         print(log)

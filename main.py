@@ -5,8 +5,16 @@ from redditcontentfarmer import RedditContentFarmer
 
 load_dotenv()
 
-subreddits = ["AmItheAsshole", "TIFU", "TrueOffMyChest", "cheating_stories"]
-narrators = ["snoop", "mrbeast", "gwyneth", "male", "female"]
+subreddits = [
+    "AmItheAsshole",
+    "TIFU",
+    "TrueOffMyChest",
+    "cheating_stories",
+    "pettyrevenge",
+    "confession",
+    "socialskills",
+]
+narrators = ["snoop", "mrbeast", "gwyneth", "male", "female", "narrator"]
 
 rcf = RedditContentFarmer(
     client_id=os.getenv("REDDIT_CLIENT_ID"),
@@ -27,8 +35,9 @@ rcf.upload_to_instagram(
     username=os.getenv("INSTAGRAM_USERNAME"),
     password=os.getenv("INSTAGRAM_PASSWORD"),
     input_path="output/output.mp4",
-    caption="""
-👉👉👉 Follow @funfacts.io for more! 👈👈👈
-#weirdhistory #crazyinventions #oldschoolcool #vintageweird #factcheckthis #historygeeks #quirkyfacts #historicalhijinks #inventioninsanity #throwbackthrills #didyouknow #instafacts #factoftheday #sciencefacts #memes #trending #funnymemes #trivia #unknownfacts
+    output_path="output",
+    caption=f"""
+{rcf.post_title}
+#redditfeeds #askreddit #reddit #redditstories #redditreadings #redditmemes #dating #datingadvice #memes #trending #funnymemes #nsfw #reels
 """,
 )
