@@ -100,6 +100,10 @@ def get_speechify_narration(
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     driver = uc.Chrome(options=options)
     driver.get("https://speechify.com/text-to-speech-online/")
+    driver.save_screenshot("screenshot.png")
+    # Bypasses detection?
+    time.sleep(10)
+    driver.save_screenshot("screenshot.png")
     # Set a value in local storage
     if narrator == "snoop" or narrator == "narrator":
         speechify_narrator = f"resemble.{narrator}"
