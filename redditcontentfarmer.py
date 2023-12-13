@@ -403,9 +403,9 @@ class RedditContentFarmer:
             raise ValueError(
                 "Please make sure you have a subreddit_icons folder with `.png` files in the working directory of your script."
             )
-        if not os.path.exists(f"subreddit_icons/Reddit.png"):
+        if not os.path.exists(f"subreddit_icons/reddit.png"):
             raise ValueError(
-                f"Please make sure you have the default `Reddit.png` file in your subreddit_icons folder."
+                f"Please make sure you have the default `reddit.png` file in your subreddit_icons folder."
             )
 
         def add_corners(im, rad):
@@ -451,7 +451,7 @@ class RedditContentFarmer:
         mask = Image.new("L", size, 0)
         draw = ImageDraw.Draw(mask)
         draw.ellipse((0, 0) + size, fill=255)
-        im = Image.open("subreddit_icons/Reddit.png")
+        im = Image.open("subreddit_icons/reddit.png")
         im = im.convert("RGBA")
         pfp = im.resize((60, 60))
         im = Image.open("subreddit_icons/awards.png")
