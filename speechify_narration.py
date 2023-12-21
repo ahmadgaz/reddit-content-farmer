@@ -68,6 +68,10 @@ def log_filter(log_):
     return (
         log_["method"] == "Network.responseReceived"
         and "json" in log_["params"]["response"]["mimeType"]
+        and "https://audio.api.speechify.com/generateAudioFiles"
+        in log_["params"]["response"]["url"]
+        and log_["params"]["response"]["headers"]["content-type"]
+        == "application/json; charset=utf-8"
     )
 
 
@@ -146,12 +150,6 @@ def get_speechify_narration(
         logs = [json.loads(lr["message"])["message"] for lr in logs_raw]
         for index, log in enumerate(filter(log_filter, logs)):
             resp_url = log["params"]["response"]["url"]
-            resp_type = log["params"]["response"]["headers"]["content-type"]
-            if (
-                "https://audio.api.speechify.dev/generateAudioFiles" not in resp_url
-                or resp_type != "application/json; charset=utf-8"
-            ):
-                continue
             request_id = log["params"]["requestId"]
             print(f"Caught {resp_url} at index {index}")
             response = driver.execute_cdp_cmd(
