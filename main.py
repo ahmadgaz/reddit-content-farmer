@@ -47,6 +47,6 @@ rcf.upload_to_instagram(
 
 upload_tiktok_video(
     token=os.getenv("TIKTOK_TOKEN"),
-    session_id=os.getenv("TIKTOK_SESSION_ID"),
+    session_id=os.getenv("TIKTOK_SESSIONID"),
     caption=caption,
 )
