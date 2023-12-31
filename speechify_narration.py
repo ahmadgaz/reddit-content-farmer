@@ -180,7 +180,7 @@ def get_speechify_narration(
         )
     combined_audio.export(f"{output_path}/{output_filename}", format="wav")
     AudioSegment.from_wav(f"{output_path}/{output_filename}").export(
-        f"{output_path}{output_filename.replace('.wav', '.mp3')}", format="mp3"
+        f"{output_path}/{output_filename.replace('.wav', '.mp3')}", format="mp3"
     )
     time.sleep(10)
     driver.quit()
