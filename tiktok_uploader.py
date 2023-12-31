@@ -23,7 +23,7 @@ def upload_tiktok_video(
     token: str,
     session_id: str,
     caption: str,
-    path: str = "output/",
+    path: str = "output",
     file_name: str = "output.mp4",
 ):
     suppress_exception_in_del(uc)
@@ -68,7 +68,7 @@ def upload_tiktok_video(
     )
     time.sleep(20)
     driver.find_element(by=By.XPATH, value='//input[@accept="video/*"]').send_keys(
-        os.getcwd() + f"/{path}{file_name}"
+        os.getcwd() + f"/{path}/{file_name}"
     )
     time.sleep(60)
     textInput = driver.find_element(by=By.XPATH, value='//div[@contenteditable="true"]')

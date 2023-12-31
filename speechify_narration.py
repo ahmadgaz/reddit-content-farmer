@@ -90,7 +90,7 @@ def suppress_exception_in_del(uc):
 def get_speechify_narration(
     narrator: Literal["snoop", "mrbeast", "gwyneth", "male", "female"] = "mrbeast",
     text: str = "Heck yeah baby, I'm a text to speech bot.",
-    output_path: str = "output/",
+    output_path: str = "output",
     output_filename: str = "output.wav",
 ):
     suppress_exception_in_del(uc)
@@ -178,8 +178,8 @@ def get_speechify_narration(
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", textArea, ""
         )
-    combined_audio.export(f"{output_path}{output_filename}", format="wav")
-    AudioSegment.from_wav(f"{output_path}{output_filename}").export(
+    combined_audio.export(f"{output_path}/{output_filename}", format="wav")
+    AudioSegment.from_wav(f"{output_path}/{output_filename}").export(
         f"{output_path}{output_filename.replace('.wav', '.mp3')}", format="mp3"
     )
     time.sleep(10)
