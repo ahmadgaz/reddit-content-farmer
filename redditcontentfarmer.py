@@ -771,7 +771,7 @@ class RedditContentFarmer:
         # os.system("taskkill /f /im chromedriver.exe /T")
         # os.system("taskkill /f /im chrome.exe /T")
         # os.system("taskkill /f /im IEDriverServer.exe /T")
-        # Debian
+        # Linux
         os.system("killall -KILL geckodriver")
         os.system("killall -KILL chromedriver")
         os.system("killall -KILL chrome")

@@ -104,10 +104,8 @@ def get_speechify_narration(
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     driver = uc.Chrome(options=options)
     driver.get("https://speechify.com/text-to-speech-online/")
-    driver.save_screenshot("screenshot.png")
     # Bypasses detection?
     time.sleep(10)
-    driver.save_screenshot("screenshot.png")
     # Set a value in local storage
     if narrator == "snoop" or narrator == "narrator":
         speechify_narrator = f"resemble.{narrator}"
@@ -180,9 +178,9 @@ def get_speechify_narration(
         driver.execute_script(
             "arguments[0].setAttribute('style',arguments[1])", textArea, ""
         )
-    combined_audio.export(f"{output_path}/{output_filename}", format="wav")
-    AudioSegment.from_wav(f"{output_path}/{output_filename}").export(
-        f"{output_path}/{output_filename.replace('.wav', '.mp3')}", format="mp3"
+    combined_audio.export(f"{output_path}{output_filename}", format="wav")
+    AudioSegment.from_wav(f"{output_path}{output_filename}").export(
+        f"{output_path}{output_filename.replace('.wav', '.mp3')}", format="mp3"
     )
     time.sleep(10)
     driver.quit()

@@ -2,6 +2,7 @@ import os
 import random
 from dotenv import load_dotenv
 from redditcontentfarmer import RedditContentFarmer
+from tiktok_uploader import upload_tiktok_video
 
 load_dotenv()
 
@@ -31,13 +32,21 @@ rcf.create_video(
     narrator=random.choice(narrators),
 )
 
+caption = f"""
+{rcf.post_title}
+#redditfeeds #askreddit #reddit #redditstories #redditreadings #redditmemes #dating #datingadvice #memes #trending #funnymemes #nsfw #reels
+"""
+
 rcf.upload_to_instagram(
     username=os.getenv("INSTAGRAM_USERNAME"),
     password=os.getenv("INSTAGRAM_PASSWORD"),
     input_path="output/output.mp4",
     output_path="output",
-    caption=f"""
-{rcf.post_title}
-#redditfeeds #askreddit #reddit #redditstories #redditreadings #redditmemes #dating #datingadvice #memes #trending #funnymemes #nsfw #reels
-""",
+    caption=caption,
+)
+
+upload_tiktok_video(
+    token=os.getenv("TIKTOK_TOKEN"),
+    session_id=os.getenv("TIKTOK_SESSION_ID"),
+    caption=caption,
 )
