@@ -676,7 +676,8 @@ class RedditContentFarmer:
         session_exists = os.path.exists("instagram_session/session.json")
         if not session_exists:
             self.__log_("Session file not found, creating empty file...")
-            os.makedirs("instagram_session")
+            if not os.path.exists("instagram_session"):
+                os.makedirs("instagram_session")
             with open("instagram_session/session.json", "w") as file:
                 json.dump({}, file)
         else:
